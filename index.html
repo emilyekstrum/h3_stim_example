@@ -1,0 +1,32 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>3-torus stimulus</title>
+<style>body{font-family:Arial,sans-serif;max-width:680px;margin:20px auto;color:#1f2328;background:#fff}
+.row{display:flex;align-items:center;gap:12px;margin:6px 0}.row label{font-size:14px;color:#5f6368;width:110px}
+.row span{font-size:14px;font-weight:bold;min-width:48px;text-align:right}.cap{font-size:13px;color:#5f6368;margin:14px 0 6px}
+.strip{display:flex;gap:4px;flex-wrap:wrap}.strip canvas{border-radius:4px;cursor:pointer}</style></head><body>
+<canvas id="mon" width="640" height="300" style="width:100%;border-radius:8px"></canvas>
+<div class="row"><label>Ring position</label><input type="range" id="p" min="0" max="11" value="0" style="flex:1"><span id="po"></span></div>
+<div class="row"><label>Orientation</label><input type="range" id="o" min="0" max="11" value="2" style="flex:1"><span id="oo"></span></div>
+<div class="row"><label>Spatial phase</label><input type="range" id="f" min="0" max="7" value="0" style="flex:1"><span id="fo"></span></div>
+<div class="cap">Position around the ring (12 steps, 360°)</div><div class="strip" id="s1"></div>
+<div class="cap">Orientation (12 steps, 180°)</div><div class="strip" id="s2"></div>
+<div class="cap">Spatial phase (8 steps, 360°)</div><div class="strip" id="s3"></div>
+<script>
+const NP=12,NO=12,NF=8;
+function gabor(ctx,cx,cy,ori,ph,sig,lam){const r=Math.ceil(sig*3),x0=Math.round(cx-r),y0=Math.round(cy-r),w=2*r,img=ctx.getImageData(x0,y0,w,w),d=img.data,c=Math.cos(ori),s=Math.sin(ori);
+for(let j=0;j<w;j++)for(let i=0;i<w;i++){const x=i-r,y=j-r,xp=x*c+y*s,g=Math.exp(-(x*x+y*y)/(2*sig*sig)),v=128+120*g*Math.cos(2*Math.PI*xp/lam+ph),k=(j*w+i)*4;d[k]=d[k+1]=d[k+2]=v;d[k+3]=255;}ctx.putImageData(img,x0,y0);}
+function monitor(cv,pi,oi,fi,big){const ctx=cv.getContext('2d'),W=cv.width,H=cv.height;ctx.fillStyle='rgb(128,128,128)';ctx.fillRect(0,0,W,H);const cx=W/2,cy=H/2,R=H*0.33;
+ctx.strokeStyle='rgba(255,255,255,0.35)';ctx.setLineDash([4,5]);ctx.beginPath();ctx.arc(cx,cy,R,0,2*Math.PI);ctx.stroke();ctx.setLineDash([]);
+if(big){for(let k=0;k<NP;k++){const a=2*Math.PI*k/NP;ctx.fillStyle='rgba(255,255,255,0.45)';ctx.beginPath();ctx.arc(cx+R*Math.cos(a),cy+R*Math.sin(a),2.5,0,2*Math.PI);ctx.fill();}}
+const a=2*Math.PI*pi/NP;gabor(ctx,cx+R*Math.cos(a),cy+R*Math.sin(a),Math.PI*oi/NO,2*Math.PI*fi/NF,big?H*0.07:H*0.08,big?H*0.1:H*0.11);}
+function patch(cv,oi,fi){const ctx=cv.getContext('2d');ctx.fillStyle='rgb(128,128,128)';ctx.fillRect(0,0,cv.width,cv.height);gabor(ctx,cv.width/2,cv.height/2,Math.PI*oi/NO,2*Math.PI*fi/NF,9,13);}
+const P=document.getElementById('p'),O=document.getElementById('o'),F=document.getElementById('f');
+function mk(id,n,w,h,inp){const el=document.getElementById(id),a=[];for(let k=0;k<n;k++){const c=document.createElement('canvas');c.width=w;c.height=h;c.onclick=()=>{inp.value=k;up();};el.appendChild(c);a.push(c);}return a;}
+const s1=mk('s1',NP,64,40,P),s2=mk('s2',NO,48,48,O),s3=mk('s3',NF,48,48,F);
+function up(){const p=+P.value,o=+O.value,f=+F.value;
+document.getElementById('po').textContent=Math.round(360*p/NP)+'°';document.getElementById('oo').textContent=Math.round(180*o/NO)+'°';document.getElementById('fo').textContent=Math.round(360*f/NF)+'°';
+monitor(document.getElementById('mon'),p,o,f,true);
+s1.forEach((c,k)=>{monitor(c,k,o,f,false);c.style.outline=k===p?'2px solid #2f6feb':'none';});
+s2.forEach((c,k)=>{patch(c,k,f);c.style.outline=k===o?'2px solid #2f6feb':'none';});
+s3.forEach((c,k)=>{patch(c,o,k);c.style.outline=k===f?'2px solid #2f6feb':'none';});}
+[P,O,F].forEach(e=>e.addEventListener('input',up));up();
+</script></body></html>
