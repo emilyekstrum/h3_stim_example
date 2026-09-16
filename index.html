@@ -15,8 +15,6 @@ const NP=12,NO=12,NF=8;
 function gabor(ctx,cx,cy,ori,ph,sig,lam){const r=Math.ceil(sig*3),x0=Math.round(cx-r),y0=Math.round(cy-r),w=2*r,img=ctx.getImageData(x0,y0,w,w),d=img.data,c=Math.cos(ori),s=Math.sin(ori);
 for(let j=0;j<w;j++)for(let i=0;i<w;i++){const x=i-r,y=j-r,xp=x*c+y*s,g=Math.exp(-(x*x+y*y)/(2*sig*sig)),v=128+120*g*Math.cos(2*Math.PI*xp/lam+ph),k=(j*w+i)*4;d[k]=d[k+1]=d[k+2]=v;d[k+3]=255;}ctx.putImageData(img,x0,y0);}
 function monitor(cv,pi,oi,fi,big){const ctx=cv.getContext('2d'),W=cv.width,H=cv.height;ctx.fillStyle='rgb(128,128,128)';ctx.fillRect(0,0,W,H);const cx=W/2,cy=H/2,R=H*0.33;
-ctx.strokeStyle='rgba(255,255,255,0.35)';ctx.setLineDash([4,5]);ctx.beginPath();ctx.arc(cx,cy,R,0,2*Math.PI);ctx.stroke();ctx.setLineDash([]);
-if(big){for(let k=0;k<NP;k++){const a=2*Math.PI*k/NP;ctx.fillStyle='rgba(255,255,255,0.45)';ctx.beginPath();ctx.arc(cx+R*Math.cos(a),cy+R*Math.sin(a),2.5,0,2*Math.PI);ctx.fill();}}
 const a=2*Math.PI*pi/NP;gabor(ctx,cx+R*Math.cos(a),cy+R*Math.sin(a),Math.PI*oi/NO,2*Math.PI*fi/NF,big?H*0.07:H*0.08,big?H*0.1:H*0.11);}
 function patch(cv,oi,fi){const ctx=cv.getContext('2d');ctx.fillStyle='rgb(128,128,128)';ctx.fillRect(0,0,cv.width,cv.height);gabor(ctx,cv.width/2,cv.height/2,Math.PI*oi/NO,2*Math.PI*fi/NF,9,13);}
 const P=document.getElementById('p'),O=document.getElementById('o'),F=document.getElementById('f');
